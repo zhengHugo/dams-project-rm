@@ -2,27 +2,57 @@ package rm;
 
 import DAMS.Frontend.Request.Request;
 import client.AdminClient;
+import client.PatientClient;
 import replica.dto.AppointmentType;
 
-public class MyReplicaManager extends ReplicaManager{
-  AdminClient mtlAdmin = new AdminClient("MTLA1111");
-  AdminClient queAdmin = new AdminClient("QUEA1111");
+public class MyReplicaManager extends ReplicaManager {
+  AdminClient adminClient;
+  PatientClient patientClient;
 
-  public void handleRequest(Request request){
+  @Override
+  public void handleRequest(Request request) {
     switch (request.getOperation()) {
-      case "MTL AddAppointment":
-        mtlAdmin.addAppointment(
+      case "AddAppointment":
+        adminClient = new AdminClient(request.getAdminId());
+        adminClient.addAppointment(
             request.getAppointmentID(),
             AppointmentType.fromValue(request.getAppointmentType()),
             request.getCapacity());
         break;
-      case "QUE AddAppointment":
+      case "RemoveAppointment":
+        adminClient = new AdminClient(request.getAdminId());
+        adminClient.removeAppointment(
+            request.getAppointmentID(), AppointmentType.fromValue(request.getAppointmentType()));
         break;
-      case "SHE AddAppointment":
+      case "ListAppointmentAvailability":
+        adminClient = new AdminClient(request.getAdminId());
+        adminClient.listAppointmentAvailability(
+            AppointmentType.fromValue(request.getAppointmentType()));
+        break;
+      case "BookAppointment":
+        patientClient = new PatientClient(request.getPatientID());
+        patientClient.bookAppointment(
+            request.getAppointmentID(), AppointmentType.fromValue(request.getOldAppointmentType()));
+        break;
+      case "GetAppointmentSchedule":
+        patientClient = new PatientClient(request.getPatientID());
+        patientClient.getAppointmentSchedule();
+        break;
+      case "CancelAppointment":
+        patientClient = new PatientClient(request.getPatientID());
+        patientClient.cancelAppointment(
+            request.getAppointmentID(), AppointmentType.fromValue(request.getAppointmentType()));
+        break;
+      case "SwapAppointment":
+        patientClient = new PatientClient(request.getPatientID());
+        patientClient.swapAppointment(
+            request.getOldAppointmentID(),
+            AppointmentType.fromValue(request.getOldAppointmentType()),
+            request.getAppointmentID(),
+            AppointmentType.fromValue(request.getAppointmentType()));
         break;
       default:
-        // TODO
+        // TODO: invalid operation
     }
   }
-
 }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class Request implements Serializable {
 
+  String adminId;
   String operation;
   String patientID;
   String appointmentID;
@@ -97,6 +98,14 @@ public class Request implements Serializable {
 
   public String getPatientID() {
     return patientID;
+  }
+
+  public String getAdminId() {
+    return adminId;
+  }
+
+  public void setAdminId(String adminId) {
+    this.adminId = adminId;
   }
 
   public void setPatientID(String patientID) {
