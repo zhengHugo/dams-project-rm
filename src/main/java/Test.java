@@ -1,7 +1,7 @@
-import rm.MyReplicaManager;
+import rm.ReplicaManager;
 
 public class Test {
   public static void main(String[] args) {
-    new MyReplicaManager().run();
+    new ReplicaManager().run();
   }
 }

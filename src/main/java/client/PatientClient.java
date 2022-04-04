@@ -1,5 +1,6 @@
 package client;
 
+import DAMS.Frontend.Response.Response;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -20,8 +21,7 @@ public class PatientClient {
   private Patient patientRemote;
   private final Logger logger;
   private final Gson gson = new Gson();
-  private final Type appointmentListType = new TypeToken<List<Appointment>>() {
-  }.getType();
+  private final Type appointmentListType = new TypeToken<List<Appointment>>() {}.getType();
 
   public PatientClient(String id) {
     this.id = new PatientId(id);
@@ -30,48 +30,55 @@ public class PatientClient {
     setPatientRemote();
   }
 
-  public void bookAppointment(String appointmentIdStr, AppointmentType type) {
-    boolean success =
-        patientRemote.bookAppointment(this.id.getId(), type, appointmentIdStr);
+  public Response bookAppointment(String appointmentIdStr, AppointmentType type) {
+    boolean success = patientRemote.bookAppointment(this.id.getId(), type, appointmentIdStr);
+    String message;
     if (success) {
-      logger.info(String.format("Booked appointment: %s - %s", type, appointmentIdStr));
+      message = String.format("Booked appointment: %s - %s", type, appointmentIdStr);
+      logger.info(message);
     } else {
-      logger.info(String.format("Unable to book appointment: %s - %s", type, appointmentIdStr));
+      message = String.format("Unable to book appointment: %s - %s", type, appointmentIdStr);
+      logger.info(message);
     }
+    return new Response("BookAppointment", "", success, message);
   }
 
-  public List<Appointment> getAppointmentSchedule() {
+  public Response getAppointmentSchedule() {
     List<Appointment> appointments =
         gson.fromJson(patientRemote.getAppointmentSchedule(this.id.getId()), appointmentListType);
-    logger.info(
+    String message =
         String.format(
             "Get appointment schedule: %s",
             appointments.stream()
                 .map(app -> app.getType() + " - " + app.getAppointmentId().getId() + " ")
                 .reduce(String::concat)
-                .orElse("")));
-    return appointments;
+                .orElse(""));
+    logger.info(message);
+    return new Response("GetAppointmentSchedule", "", true, message);
   }
 
-  public boolean cancelAppointment(String id, AppointmentType type) {
+  public Response cancelAppointment(String id, AppointmentType type) {
     if (patientRemote.cancelAppointment(this.id.getId(), type, id)) {
-      logger.info("Cancel appointment success");
-      return true;
+      String message = "Cancel appointment success";
+      logger.info(message);
+      return new Response("CancelAppointment", "", true, message);
     } else {
-      logger.info("Cannot canncel appointment");
-      return false;
+      String message = "Cannot canncel appointment";
+      logger.info(message);
+      return new Response("CancelAppointment", "", false, message);
     }
   }
 
-  public boolean swapAppointment(
+  public Response swapAppointment(
       String oldId, AppointmentType oldType, String newId, AppointmentType newType) {
-    if (patientRemote.swapAppointment(
-        this.id.getId(), oldType, oldId, newType, newId)) {
-      logger.info("Swap appointment success");
-      return true;
+    if (patientRemote.swapAppointment(this.id.getId(), oldType, oldId, newType, newId)) {
+      String message = "Swap appointment success";
+      logger.info(message);
+      return new Response("SwapAppointment", "", true, message);
     } else {
-      logger.info("Cannot swap appointment");
-      return false;
+      String message = "Cannot swap appointment";
+      logger.info(message);
+      return new Response("SwapAppointment", "", false, message);
     }
   }
 

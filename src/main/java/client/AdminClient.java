@@ -1,11 +1,13 @@
 package client;
 
-
+import DAMS.Frontend.Response.Response;
+import DAMS.Frontend.ResponseWrapper.ResponseWrapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import logger.LoggerUtil;
 import org.apache.logging.log4j.LogManager;
@@ -22,8 +24,7 @@ public class AdminClient {
   private final Logger logger;
   private final Gson gson = new Gson();
   private final Type appointmentAvailabilityListType =
-      new TypeToken<List<AppointmentAvailability>>() {
-      }.getType();
+      new TypeToken<List<AppointmentAvailability>>() {}.getType();
 
   public AdminClient(String id) {
     this.id = new AdminId(id);
@@ -32,21 +33,31 @@ public class AdminClient {
     setAdminRemote();
   }
 
-  public void addAppointment(String id, AppointmentType type, int capacity) {
+  public Response addAppointment(String id, AppointmentType type, int capacity) {
     boolean success = adminRemote.addAppointment(id, type, capacity);
+
+    String message;
     if (success) {
-      logger.info(String.format("Added appointment: %s - %s", type, id));
+      message = String.format("Added appointment: %s - %s", type, id);
+      logger.info(message);
     } else {
-      logger.info(String.format("Unable to add appointment %s - %s", type, id));
+      message = String.format("Unable to add appointment %s - %s", type, id);
+      logger.info(message);
+    }
+    return new Response("AddApointment", "", success, message);
+  }
+
+  public Response removeAppointment(String id, AppointmentType type) {
+    String message = adminRemote.removeAppointment(id, type);
+    logger.info(message);
+    if (message.contains("removed")) {
+      return new Response("RemoveAppointment", "", true, message);
+    } else {
+      return new Response("RemoveAppointment", "", false, message);
     }
   }
 
-  public void removeAppointment(String id, AppointmentType type) {
-    String message = adminRemote.removeAppointment(id, type);
-    logger.info(message);
-  }
-
-  public void listAppointmentAvailability(AppointmentType type) {
+  public Response listAppointmentAvailability(AppointmentType type) {
     List<AppointmentAvailability> availabilities =
         gson.fromJson(
             adminRemote.listAppointmentAvailability(type), appointmentAvailabilityListType);
@@ -61,7 +72,23 @@ public class AdminClient {
     }
     // replace the last ", " with "."
     stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), ".");
-    logger.info(stringBuilder.toString());
+    String message = stringBuilder.toString();
+    logger.info(message);
+    HashMap<String, String> map = new HashMap<>();
+    for (AppointmentAvailability aa : availabilities) {
+      map.put(aa.getAppointmentId(), String.valueOf(aa.getAvailability()));
+    }
+    ResponseWrapper wrapper = new ResponseWrapper(map);
+    return new Response("ListAppointmentAvailability", "", true, wrapper);
+  }
+
+  public static Response getAppointmentTypes() {
+    return new Response(
+        "GetAppointmentTypes", "", true, new String[] {"Physician, Surgeon, Dental"});
+  }
+
+  public static Response getTimeSlots() {
+    return new Response("GetTimeSlots", "", true, new String[] {"M", "A", "E"});
   }
 
   private void setAdminRemote() {

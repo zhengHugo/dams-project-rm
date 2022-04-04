@@ -3,8 +3,8 @@ package DAMS.Frontend.Request;
 import java.io.Serializable;
 
 public class Request implements Serializable {
-
-  String adminId;
+  String serverCode;
+  String userID;
   String operation;
   String patientID;
   String appointmentID;
@@ -17,24 +17,15 @@ public class Request implements Serializable {
   String oldAppointmentType;
   Integer sequenceNumber;
 
-  public Integer getSequenceNumber() {
-    return sequenceNumber;
-  }
-
-  public void setSequenceNumber(Integer sequenceNumber) {
-    this.sequenceNumber = sequenceNumber;
-  }
-
-  public Request(String operation) {
+  public Request(String serverCode, String userID, String operation) {
+    this.serverCode = serverCode;
+    this.userID = userID;
     this.operation = operation;
   }
 
-  public Request(
-      String operation,
-      String appointmentID,
-      String appointmentType,
-      String appointmentDescription,
-      int capacity) {
+  public Request(String serverCode, String userID, String operation, String appointmentID, String appointmentType, String appointmentDescription, int capacity) {
+    this.serverCode = serverCode;
+    this.userID = userID;
     this.operation = operation;
     this.appointmentID = appointmentID;
     this.appointmentType = appointmentType;
@@ -42,12 +33,9 @@ public class Request implements Serializable {
     this.capacity = capacity;
   }
 
-  public Request(
-      String operation,
-      String patientID,
-      String appointmentType,
-      String operationType,
-      String performedBy) {
+  public Request(String serverCode, String userID, String operation, String patientID, String appointmentType, String operationType, String performedBy) {
+    this.serverCode = serverCode;
+    this.userID = userID;
     this.operation = operation;
     this.patientID = patientID;
     this.appointmentType = appointmentType;
@@ -55,37 +43,63 @@ public class Request implements Serializable {
     this.performedBy = performedBy;
   }
 
-  public Request(String operation, String appointmentType) {
+  public Request(String serverCode, String userID, String operation, String appointmentType) {
+    this.serverCode = serverCode;
+    this.userID = userID;
     this.operation = operation;
     this.appointmentType = appointmentType;
   }
 
-  public Request(String operation, String appointmentID, String appointmentType) {
+  public Request(String serverCode, String userID, String operation, String appointmentID, String appointmentType) {
+    this.serverCode = serverCode;
+    this.userID = userID;
     this.operation = operation;
     this.appointmentID = appointmentID;
     this.appointmentType = appointmentType;
   }
 
-  public Request(String operation, String patientID, String appointmentID, String appointmentType) {
+  public Request(String serverCode, String userID, String operation, String patientID, String appointmentID, String appointmentType) {
+    this.serverCode = serverCode;
+    this.userID = userID;
     this.operation = operation;
     this.patientID = patientID;
     this.appointmentID = appointmentID;
     this.appointmentType = appointmentType;
   }
 
-  public Request(
-      String operation,
-      String patientID,
-      String oldAppointmentID,
-      String oldAppointmentType,
-      String newAppointmentID,
-      String newAppointmentType) {
+  public Request(String serverCode, String userID, String operation, String patientID, String oldAppointmentID, String oldAppointmentType, String newAppointmentID, String newAppointmentType) {
+    this.serverCode = serverCode;
+    this.userID = userID;
     this.operation = operation;
     this.patientID = patientID;
     this.oldAppointmentID = oldAppointmentID;
     this.oldAppointmentType = oldAppointmentType;
     this.appointmentID = newAppointmentID;
     this.appointmentType = newAppointmentType;
+  }
+
+  public String getServerCode() {
+    return serverCode;
+  }
+
+  public void setServerCode(String serverCode) {
+    this.serverCode = serverCode;
+  }
+
+  public String getUserID() {
+    return userID;
+  }
+
+  public void setUserID(String userID) {
+    this.userID = userID;
+  }
+
+  public String getserverCode() {
+    return serverCode;
+  }
+
+  public void setserverCode(String serverCode) {
+    this.serverCode = serverCode;
   }
 
   public String getOperation() {
@@ -98,14 +112,6 @@ public class Request implements Serializable {
 
   public String getPatientID() {
     return patientID;
-  }
-
-  public String getAdminId() {
-    return adminId;
-  }
-
-  public void setAdminId(String adminId) {
-    this.adminId = adminId;
   }
 
   public void setPatientID(String patientID) {
@@ -144,6 +150,7 @@ public class Request implements Serializable {
     this.capacity = capacity;
   }
 
+
   public String getOperationType() {
     return operationType;
   }
@@ -174,5 +181,13 @@ public class Request implements Serializable {
 
   public void setOldAppointmentType(String oldAppointmentType) {
     this.oldAppointmentType = oldAppointmentType;
+  }
+
+  public Integer getSequenceNumber() {
+    return sequenceNumber;
+  }
+
+  public void setSequenceNumber(Integer sequenceNumber) {
+    this.sequenceNumber = sequenceNumber;
   }
 }

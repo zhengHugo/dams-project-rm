@@ -2,18 +2,26 @@ package rm;
 
 import DAMS.Frontend.Request.Request;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.PriorityQueue;
 
-public abstract class ReplicaManager implements Runnable {
-  private MulticastSocket multicastSocket;
+public class ReplicaManager implements Runnable {
+  private final String groupIp = "230.0.0.1";
+  private final int groupPort = 1421;
+
   private final PriorityQueue<Request> holdBackQueue;
+
+  private MulticastSocket multicastSocket;
   private int nextSeqNum;
 
   public ReplicaManager() {
@@ -24,17 +32,16 @@ public abstract class ReplicaManager implements Runnable {
   @Override
   public void run() {
     try {
-      this.multicastSocket = new MulticastSocket(1421);
+      this.multicastSocket = new MulticastSocket(groupPort);
       // TODO: group ip address
-      InetAddress group = InetAddress.getByName("230.0.0.1");
+      InetAddress group = InetAddress.getByName(groupIp);
       multicastSocket.joinGroup(group);
       while (true) {
         Request incomingRequest = this.receive();
-        System.out.println("Incoming request seqnum:  " + incomingRequest.getSequenceNumber());
         holdBackQueue.add(incomingRequest);
         assert holdBackQueue.peek() != null;
         if (nextSeqNum == holdBackQueue.peek().getSequenceNumber()) {
-          handleRequest(Objects.requireNonNull(holdBackQueue.poll()));
+          deliverRequest(Objects.requireNonNull(holdBackQueue.poll()));
           this.nextSeqNum++;
         }
       }
@@ -48,7 +55,6 @@ public abstract class ReplicaManager implements Runnable {
     try {
       DatagramPacket udpPacket = new DatagramPacket(buf, buf.length);
       multicastSocket.receive(udpPacket);
-      System.out.println("UDP packet received");
       byte[] responsePayload = udpPacket.getData();
       ObjectInputStream objectInputStream =
           new ObjectInputStream(new ByteArrayInputStream(responsePayload));
@@ -59,9 +65,36 @@ public abstract class ReplicaManager implements Runnable {
     return null;
   }
 
-  /**
-   * Call the service implementation in this method
-   * @param request the request object
-   */
-  public abstract void handleRequest(Request request);
+  public void deliverRequest(Request request) {
+    // ip and port of replica
+    String hostIp = "";
+    int port = 0;
+    switch (request.getServerCode()) {
+      case "MTL":
+        hostIp = "1.1.1.1";
+        port = 6821;
+        break;
+      case "QUE":
+        hostIp = "1.1.1.1";
+        port = 6822;
+        break;
+      case "SHE":
+        hostIp = "1.1.1.1";
+        port = 6823;
+        break;
+    }
+    try {
+      DatagramSocket udpSocket = new DatagramSocket();
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+      objectOutputStream.writeObject(request);
+      objectOutputStream.flush();
+      byte[] requestAsBytes = byteArrayOutputStream.toByteArray();
+      InetSocketAddress ip = new InetSocketAddress(hostIp, port);
+      DatagramPacket responsePacket = new DatagramPacket(requestAsBytes, requestAsBytes.length, ip);
+      udpSocket.send(responsePacket);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
 }
