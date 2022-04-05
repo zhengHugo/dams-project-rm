@@ -91,8 +91,8 @@ public class ReplicaManager implements Runnable {
       objectOutputStream.flush();
       byte[] requestAsBytes = byteArrayOutputStream.toByteArray();
       InetSocketAddress ip = new InetSocketAddress(hostIp, port);
-      DatagramPacket responsePacket = new DatagramPacket(requestAsBytes, requestAsBytes.length, ip);
-      udpSocket.send(responsePacket);
+      DatagramPacket requestPacket = new DatagramPacket(requestAsBytes, requestAsBytes.length, ip);
+      udpSocket.send(requestPacket);
     } catch (IOException e) {
       e.printStackTrace();
     }
